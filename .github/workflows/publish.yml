@@ -58,6 +58,8 @@ jobs:
 
       - name: Build package
         run: yarn build
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Publish package
         run: yarn publish
         env:
