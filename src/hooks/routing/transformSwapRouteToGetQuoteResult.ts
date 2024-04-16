@@ -1,5 +1,5 @@
 import { Protocol } from '@uniswap/router-sdk'
-import type { SwapRoute } from '@uniswap/smart-order-router'
+import type { SwapRoute } from '@ewe-james/smart-order-router'
 import { QuoteResult, QuoteState, V2PoolInRoute, V3PoolInRoute } from 'state/routing/types'
 import { isExactInput } from 'utils/tradeType'
 

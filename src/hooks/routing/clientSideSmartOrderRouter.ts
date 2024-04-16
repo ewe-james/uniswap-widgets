@@ -1,6 +1,6 @@
 import { BaseProvider } from '@ethersproject/providers'
 import { BigintIsh, ChainId, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
-import type { AlphaRouterConfig } from '@uniswap/smart-order-router'
+import type { AlphaRouterConfig } from '@ewe-james/smart-order-router'
 // This file is lazy-loaded, so the import of smart-order-router is intentional.
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
@@ -9,7 +9,7 @@ import {
   routeAmountsToString,
   StaticV2SubgraphProvider,
   UniswapMulticallProvider,
-} from '@uniswap/smart-order-router'
+} from '@ewe-james/smart-order-router'
 import { nativeOnChain } from 'constants/tokens'
 import JSBI from 'jsbi'
 import { GetQuoteArgs, QuoteResult, QuoteState } from 'state/routing/types'

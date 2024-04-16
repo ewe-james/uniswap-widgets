@@ -71,7 +71,7 @@
       {
         "paths": [
           {
-            "name": "@uniswap/smart-order-router",
+            "name": "@ewe-james/smart-order-router",
             "message": "Forbidden import; smart-order-router is lazy-loaded.",
             "allowTypeImports": true
           }

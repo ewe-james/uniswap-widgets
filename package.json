@@ -1,6 +1,7 @@
 {
-  "name": "@uniswap/widgets",
+  "name": "@ewe-james/uniswap-widgets",
   "description": "Uniswap Interface",
+  "version": "2.59.0",
   "homepage": "https://github.com/Uniswap/widgets#readme",
   "repository": "https://github.com/Uniswap/widgets",
   "files": [
@@ -58,6 +59,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@babel/runtime": ">=7.17.0",
+    "@ewe-james/smart-order-router": "^3.27.4",
     "@fontsource/ibm-plex-mono": "^4.5.1",
     "@fontsource/inter": "^4.5.1",
     "@popperjs/core": "^2.4.4",
@@ -67,7 +69,6 @@
     "@uniswap/redux-multicall": "^1.1.8",
     "@uniswap/router-sdk": "^1.6.0",
     "@uniswap/sdk-core": "^4.0.7",
-    "@uniswap/smart-order-router": "^3.16.25",
     "@uniswap/token-lists": "^1.0.0-beta.30",
     "@uniswap/universal-router-sdk": "^1.5.7",
     "@uniswap/v2-sdk": "^3.2.1",
@@ -214,5 +215,8 @@
   },
   "resolutions": {
     "decode-uri-component": "^0.2.2"
+  },
+  "publishConfig": {
+    "@ewe-james:registry": "https://npm.pkg.github.com"
   }
 }

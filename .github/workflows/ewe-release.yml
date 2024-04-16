@@ -1,0 +1,35 @@
+name: Library Release
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      packages: write
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Automated Version Bump
+        id: version-bump
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag-prefix: v
+          major-wording: 'feat!,refactor!'
+          minor-wording: 'feat,refactor'
+          patch-wording: 'fix'
+      - name: Create the Release
+        if: ${{ steps.version-bump.outputs.newTag != '' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: 'false'
+          automatic_release_tag: '${{ steps.version-bump.outputs.newTag }}'
