@@ -46,7 +46,7 @@ jobs:
           project_id: 666786
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: sudo su -; whoami; yarn i18n:compile
+      - run: sudo su root; whoami; yarn i18n:compile
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v3
