@@ -41,7 +41,7 @@ jobs:
           localization_branch_name: main
           source: 'src/locales/en-US.po'
           translation: 'src/locales/%locale%.po'
-          crowdin_branch_name: widgets
+          crowdin_branch_name: ewe-uniswap-widget
           token: ${{ secrets.CROWDIN_TOKEN }}
           project_id: 666786
         env:
