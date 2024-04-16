@@ -8,7 +8,7 @@ on:
 jobs:
   publish-gpr:
     runs-on: ubuntu-latest
-    container: node:16
+    environment: production
     permissions:
       packages: write
       contents: write
@@ -29,32 +29,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: yarn prei18n:compile
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - run: yarn prei18n:compile
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: crowdin/github-action@v1
-        with:
-          upload_sources: true
-          upload_translations: false
-          download_translations: true
-          create_pull_request: false
-          push_translations: false
-          localization_branch_name: main
-          source: 'src/locales/en-US.po'
-          translation: 'src/locales/%locale%.po'
-          token: ${{ secrets.CROWDIN_TOKEN }}
-          project_id: 666786
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: yarn i18n:compile
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org
-          cache: yarn
+      # - uses: crowdin/github-action@v1
+      #   with:
+      #     upload_sources: true
+      #     upload_translations: false
+      #     download_translations: true
+      #     create_pull_request: false
+      #     push_translations: false
+      #     localization_branch_name: main
+      #     source: 'src/locales/en-US.po'
+      #     translation: 'src/locales/%locale%.po'
+      #     token: ${{ secrets.CROWDIN_TOKEN }}
+      #     project_id: 666786
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - run: yarn i18n:compile
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 16
+      #     registry-url: https://registry.npmjs.org
+      #     cache: yarn
 
       - name: Build package
         run: yarn build
