@@ -12,21 +12,46 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - run: yarn prepare
+
+      - run: yarn prei18n:compile
+      - uses: crowdin/github-action@1.4.8
         with:
-          fetch-depth: 0
-          fetch-tags: true
-      - uses: actions/setup-node@v4
+          upload_sources: true
+          download_translations: true
+          create_pull_request: false
+          push_translations: false
+          localization_branch_name: main
+          source: 'src/locales/en-US.po'
+          translation: 'src/locales/%locale%.po'
+          crowdin_branch_name: widgets
+          token: ${{ secrets.CROWDIN_TOKEN }}
+          project_id: 666786
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: yarn i18n:compile
+      - uses: actions/setup-node@v3
         with:
-          node-version: 18
-          registry-url: https://npm.pkg.github.com/
-      - name: Install dependencies
-        run: npm install
+          node-version: 16
+          registry-url: https://registry.npmjs.org
+          cache: yarn
+
+      - uses: actions/cache@v3
+        id: install-cache
+        with:
+          path: node_modules/
+          key: ${{ runner.os }}-install-${{ hashFiles('**/yarn.lock') }}
+
+      - if: steps.install-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile --ignore-scripts
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.PACKAGES_AUTH }}
       - name: Build package
-        run: npm run build
+        run: yarn build
       - name: Publish package
-        run: npm publish
+        run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
