@@ -25,6 +25,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PACKAGES_AUTH }}
       - run: yarn prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: yarn prei18n:compile
       - uses: crowdin/github-action@1.4.8
