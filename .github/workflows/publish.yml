@@ -46,7 +46,7 @@ jobs:
           project_id: 666786
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: chmod +w -R ${GITHUB_WORKSPACE}
+      - run: ls -al; whoami; chmod +w -R ${GITHUB_WORKSPACE}
       - run: yarn i18n:compile
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
