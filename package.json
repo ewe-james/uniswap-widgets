@@ -1,7 +1,7 @@
 {
   "name": "@ewe-james/uniswap-widgets",
   "description": "Uniswap Interface",
-  "version": "2.60.11",
+  "version": "2.60.12",
   "homepage": "https://github.com/Uniswap/widgets#readme",
   "repository": "https://github.com/Uniswap/widgets",
   "files": [
