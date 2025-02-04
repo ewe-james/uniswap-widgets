@@ -1,4 +1,4 @@
-name: Library Release
+name: Library Release MPS
 on:
   push:
     branches:
