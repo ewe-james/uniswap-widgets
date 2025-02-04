@@ -1,13 +1,18 @@
 import { Interface } from '@ethersproject/abi'
+import { BigNumber } from '@ethersproject/bignumber'
+import { Contract } from '@ethersproject/contracts'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import ERC20ABI from 'abis/erc20.json'
+import MulticallABI from 'abis/multicall.json'
 import { Erc20Interface } from 'abis/types/Erc20'
+import { MULTICALL_ADDRESS } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'hooks/multicall'
 import { useInterfaceMulticall } from 'hooks/useContract'
 import JSBI from 'jsbi'
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isAddress } from 'utils'
 
 /**
@@ -16,8 +21,10 @@ import { isAddress } from 'utils'
 export function useNativeCurrencyBalances(uncheckedAddresses?: (string | undefined)[]): {
   [address: string]: CurrencyAmount<Currency> | undefined
 } {
-  const { chainId } = useWeb3React()
+  const { chainId, provider } = useWeb3React()
   const multicallContract = useInterfaceMulticall()
+  const [bscBalances, setBscBalances] = useState<BigNumber[]>([])
+  const counter = useRef(0)
 
   const validAddressInputs: [string][] = useMemo(
     () =>
@@ -33,20 +40,45 @@ export function useNativeCurrencyBalances(uncheckedAddresses?: (string | undefin
 
   const results = useSingleContractMultipleData(multicallContract, 'getEthBalance', validAddressInputs)
 
+  const fetchBscBalances = useCallback(async () => {
+    if (chainId === SupportedChainId.BNB && uncheckedAddresses && provider) {
+      const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
+      const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
+      const callData = uncheckedAddresses.map((address) => ({
+        target: multicallAddress,
+        callData: MulticallInterface.encodeFunctionData('getEthBalance', [address]),
+      }))
+      const { returnData } = await multicallContract?.aggregate(callData)
+
+      const toReturn = returnData?.map((result: any) => {
+        return MulticallInterface.decodeFunctionResult('getEthBalance', result)
+      })
+      setBscBalances(toReturn)
+    }
+  }, [uncheckedAddresses, provider, chainId])
+
+  useEffect(() => {
+    if (counter.current % 5 === 0) {
+      fetchBscBalances()
+    }
+    counter.current++
+  })
+
   return useMemo(
     () =>
       validAddressInputs.reduce<{ [address: string]: CurrencyAmount<Currency> }>((memo, [address], i) => {
-        const value = results?.[i]?.result?.[0]
+        const value = results?.[i]?.result?.[0] || bscBalances[i]
         if (value && chainId)
           memo[address] = CurrencyAmount.fromRawAmount(nativeOnChain(chainId), JSBI.BigInt(value.toString()))
         return memo
       }, {}),
-    [validAddressInputs, chainId, results]
+    [validAddressInputs, chainId, results, bscBalances]
   )
 }
 
 const ERC20Interface = new Interface(ERC20ABI) as Erc20Interface
 const tokenBalancesGasRequirement = { gasRequired: 185_000 }
+const MulticallInterface = new Interface(MulticallABI)
 
 /**
  * Returns a map of token addresses to their eventually consistent token balances for a single account.
@@ -55,11 +87,14 @@ export function useTokenBalancesWithLoadingIndicator(
   address?: string,
   tokens?: (Token | undefined)[]
 ): [{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }, boolean] {
+  const { provider } = useWeb3React()
   const validatedTokens: Token[] = useMemo(
     () => tokens?.filter((t?: Token): t is Token => isAddress(t?.address) !== false) ?? [],
     [tokens]
   )
   const validatedTokenAddresses = useMemo(() => validatedTokens.map((vt) => vt.address), [validatedTokens])
+  const [bscBalances, setBscBalances] = useState([])
+  const counter = useRef(0)
 
   const balances = useMultipleContractSingleData(
     validatedTokenAddresses,
@@ -69,13 +104,37 @@ export function useTokenBalancesWithLoadingIndicator(
     tokenBalancesGasRequirement
   )
 
+  const fetchBscBalances = useCallback(async () => {
+    if (tokens && tokens[0]?.chainId === SupportedChainId.BNB && address && provider) {
+      const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
+      const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
+      const data = validatedTokenAddresses.map((tokenAddress) => ({
+        target: tokenAddress,
+        callData: ERC20Interface.encodeFunctionData('balanceOf', [address]),
+      }))
+
+      const { returnData } = await multicallContract?.aggregate(data)
+      const toReturn = returnData?.map((result: any) => {
+        return ERC20Interface.decodeFunctionResult('balanceOf', result)
+      })
+      setBscBalances(toReturn)
+    }
+  }, [tokens, address, validatedTokenAddresses, provider])
+
+  useEffect(() => {
+    if (counter.current % 10 === 0) {
+      fetchBscBalances()
+    }
+    counter.current++
+  })
+
   const anyLoading: boolean = useMemo(() => balances.some((callState) => callState.loading), [balances])
 
   return useMemo(
     () => [
       address && validatedTokens.length > 0
         ? validatedTokens.reduce<{ [tokenAddress: string]: CurrencyAmount<Token> | undefined }>((memo, token, i) => {
-            const value = balances?.[i]?.result?.[0]
+            const value = balances?.[i]?.result?.[0] || bscBalances[i]?.[0]
             const amount = value ? JSBI.BigInt(value.toString()) : undefined
             if (amount) {
               memo[token.address] = CurrencyAmount.fromRawAmount(token, amount)
@@ -85,7 +144,7 @@ export function useTokenBalancesWithLoadingIndicator(
         : {},
       anyLoading,
     ],
-    [address, validatedTokens, anyLoading, balances]
+    [address, validatedTokens, anyLoading, balances, bscBalances]
   )
 }
 
