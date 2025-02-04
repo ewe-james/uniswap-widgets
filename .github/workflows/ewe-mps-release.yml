@@ -38,6 +38,8 @@ jobs:
         with:
           node-version: 18
           cache: yarn
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/cache@v3
         id: install-cache
         with:
