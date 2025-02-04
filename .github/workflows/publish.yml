@@ -1,0 +1,67 @@
+name: Publish Library
+on:
+  workflow_run:
+    workflows: [Library Release]
+    types:
+      - completed
+
+jobs:
+  publish-gpr:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        id: install-cache
+        with:
+          path: node_modules/
+          key: ${{ runner.os }}-install-${{ hashFiles('**/yarn.lock') }}
+
+      - if: steps.install-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile --ignore-scripts
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_AUTH }}
+      - run: yarn prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - run: yarn prei18n:compile
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - uses: crowdin/github-action@v1
+      #   with:
+      #     upload_sources: true
+      #     upload_translations: false
+      #     download_translations: true
+      #     create_pull_request: false
+      #     push_translations: false
+      #     localization_branch_name: main
+      #     source: 'src/locales/en-US.po'
+      #     translation: 'src/locales/%locale%.po'
+      #     token: ${{ secrets.CROWDIN_TOKEN }}
+      #     project_id: 666786
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - run: yarn i18n:compile
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 16
+      #     registry-url: https://registry.npmjs.org
+      #     cache: yarn
+
+      - name: Build package
+        run: yarn build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish package
+        run: yarn publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
