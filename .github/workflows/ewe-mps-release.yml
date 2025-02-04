@@ -33,7 +33,15 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: 'false'
           automatic_release_tag: '${{ steps.version-bump.outputs.newTag }}'
-
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: release
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
