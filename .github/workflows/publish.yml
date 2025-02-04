@@ -1,5 +1,6 @@
 name: Publish Library MPS
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: [Library Release MPS]
     types:
