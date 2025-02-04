@@ -217,5 +217,8 @@
     "decode-uri-component": "^0.2.2",
     "react": "17.0.2",
     "react-dom": "17.0.2"
+  },
+  "publishConfig": {
+    "@ewe-james:registry": "https://npm.pkg.github.com"
   }
 }
