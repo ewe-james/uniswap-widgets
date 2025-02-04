@@ -48,6 +48,7 @@ jobs:
         with:
           node-version: 18
           cache: yarn
+          registry-url: https://npm.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/cache@v3
