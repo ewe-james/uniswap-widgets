@@ -40,14 +40,12 @@ jobs:
     permissions:
       packages: write
       contents: write
-      attestations: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: yarn
+          registry-url: https://npm.pkg.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/cache@v3
