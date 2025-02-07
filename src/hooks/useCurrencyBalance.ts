@@ -42,18 +42,22 @@ export function useNativeCurrencyBalances(uncheckedAddresses?: (string | undefin
 
   const fetchBscBalances = useCallback(async () => {
     if (chainId === SupportedChainId.BNB && uncheckedAddresses && provider) {
-      const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
-      const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
-      const callData = uncheckedAddresses.map((address) => ({
-        target: multicallAddress,
-        callData: MulticallInterface.encodeFunctionData('getEthBalance', [address]),
-      }))
-      const { returnData } = await multicallContract?.aggregate(callData)
+      try {
+        const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
+        const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
+        const callData = uncheckedAddresses.map((address) => ({
+          target: multicallAddress,
+          callData: MulticallInterface.encodeFunctionData('getEthBalance', [address]),
+        }))
+        const { returnData } = await multicallContract?.aggregate(callData)
 
-      const toReturn = returnData?.map((result: any) => {
-        return MulticallInterface.decodeFunctionResult('getEthBalance', result)
-      })
-      setBscBalances(toReturn)
+        const toReturn = returnData?.map((result: any) => {
+          return MulticallInterface.decodeFunctionResult('getEthBalance', result)
+        })
+        setBscBalances(toReturn)
+      } catch (error) {
+        console.error('Error fetchin balance', error)
+      }
     }
   }, [uncheckedAddresses, provider, chainId])
 
@@ -106,18 +110,22 @@ export function useTokenBalancesWithLoadingIndicator(
 
   const fetchBscBalances = useCallback(async () => {
     if (tokens && tokens[0]?.chainId === SupportedChainId.BNB && address && provider) {
-      const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
-      const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
-      const data = validatedTokenAddresses.map((tokenAddress) => ({
-        target: tokenAddress,
-        callData: ERC20Interface.encodeFunctionData('balanceOf', [address]),
-      }))
+      try {
+        const multicallAddress = MULTICALL_ADDRESS[SupportedChainId.BNB]
+        const multicallContract = new Contract(multicallAddress, MulticallInterface, provider)
+        const data = validatedTokenAddresses.map((tokenAddress) => ({
+          target: tokenAddress,
+          callData: ERC20Interface.encodeFunctionData('balanceOf', [address]),
+        }))
 
-      const { returnData } = await multicallContract?.aggregate(data)
-      const toReturn = returnData?.map((result: any) => {
-        return ERC20Interface.decodeFunctionResult('balanceOf', result)
-      })
-      setBscBalances(toReturn)
+        const { returnData } = await multicallContract?.aggregate(data)
+        const toReturn = returnData?.map((result: any) => {
+          return ERC20Interface.decodeFunctionResult('balanceOf', result)
+        })
+        setBscBalances(toReturn)
+      } catch (error) {
+        console.error('Error fetching token balances', error)
+      }
     }
   }, [tokens, address, validatedTokenAddresses, provider])
 
