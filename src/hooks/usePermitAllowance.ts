@@ -12,6 +12,7 @@ import ms from 'ms.macro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isUserRejection } from 'utils/jsonRpcError'
 
+import { useBscPermit2Allowance } from './useBscTokenAllowance'
 import { usePerfEventHandler } from './usePerfEventHandler'
 
 const PERMIT_EXPIRATION = ms`30d`
@@ -32,7 +33,9 @@ export function usePermitAllowance(token?: Token, owner?: string, spender?: stri
     blocksPerFetch,
   }).result as Awaited<ReturnType<Permit2['allowance']>> | undefined
 
-  const rawAmount = result?.amount.toString() // convert to a string before using in a hook, to avoid spurious rerenders
+  const permitResult = useBscPermit2Allowance(token, owner, spender)
+
+  const rawAmount = result?.amount.toString() || permitResult.amount.toString() // convert to a string before using in a hook, to avoid spurious rerenders
   const allowance = useMemo(
     () => (token && rawAmount ? CurrencyAmount.fromRawAmount(token, rawAmount) : undefined),
     [token, rawAmount]
@@ -40,8 +43,12 @@ export function usePermitAllowance(token?: Token, owner?: string, spender?: stri
   useEffect(() => setBlocksPerFetch(allowance?.equalTo(0) ? 1 : undefined), [allowance])
 
   return useMemo(
-    () => ({ permitAllowance: allowance, expiration: result?.expiration, nonce: result?.nonce }),
-    [allowance, result?.expiration, result?.nonce]
+    () => ({
+      permitAllowance: allowance,
+      expiration: result?.expiration || permitResult.expiration,
+      nonce: result?.nonce || permitResult.nonce,
+    }),
+    [allowance, result?.expiration, result?.nonce, permitResult.expiration, permitResult.nonce]
   )
 }
 

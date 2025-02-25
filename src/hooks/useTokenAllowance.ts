@@ -10,6 +10,7 @@ import { ApprovalTransactionInfo, TransactionType } from 'state/transactions'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { isUserRejection } from 'utils/jsonRpcError'
 
+import { useBscTokenAllowance } from './useBscTokenAllowance'
 import { usePerfEventHandler } from './usePerfEventHandler'
 
 export function useTokenAllowance(
@@ -31,7 +32,9 @@ export function useTokenAllowance(
     syncing: boolean
   }
 
-  const rawAmount = result?.toString() // convert to a string before using in a hook, to avoid spurious rerenders
+  const allowanceResult = useBscTokenAllowance(token, owner, spender)
+
+  const rawAmount = result?.toString() || allowanceResult?.toString() // convert to a string before using in a hook, to avoid spurious rerenders
   const allowance = useMemo(
     () => (token && rawAmount ? CurrencyAmount.fromRawAmount(token, rawAmount) : undefined),
     [token, rawAmount]
